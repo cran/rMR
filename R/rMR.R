@@ -49,7 +49,7 @@ tot.rss <-
 #'@import biglm
 background.resp <-
     function(data, DO.var.name, time.var.name = "std.time",
-             start.time, end.time, ...){
+             start.time, end.time, col.vec = c("black","red"), ...){
        
         orig <- "1970-01-01 00:00:00 UTC"
         
@@ -79,8 +79,20 @@ background.resp <-
         if (MR1>=0){warning("slope control 1 negative")}
         x<-data$x
         y<-data$y
-        plot(x, y, ...)
-        abline(coefficients(m1), col="red", lwd=2.5)
+        
+        # Too keep point edges from getting obscured and hazy
+        dots<-list(...)
+        if(exists("dots$cex")==TRUE){
+            cex.val<-0.7
+        }else{cex.val<-dots$cex}
+        
+        if(exists("dots$pch")==TRUE){
+            pch.val<-1
+        }else{pch.val<-dots$pch}
+        
+        plot(x, y, type="n", ...)
+        points(x=x, y=y, cex=cex.val, pch=pch.val, col=col.vec[1])
+        abline(coefficients(m1), col = col.vec[2],...)
         
         return(summary(m1))
     }
@@ -284,7 +296,8 @@ get.pcrit <-
     function(data, DO.var.name, MR.var.name = NULL, Pcrit.below,
              time.interval, time.var = NULL,
              start.time, stop.time, time.units = "sec",
-             Pcrit.type = "both",...){
+             Pcrit.type = "both",
+             col.vec = c("black", "gray60", "red", "blue"),...){
         
         data$DO<- eval(parse(text = paste("data$", DO.var.name,
                                               sep = "")))
@@ -346,7 +359,8 @@ get.pcrit <-
             data$MR <- data$MR * t.denom
             
         }else if(is.null(MR.var.name) == FALSE){
-            data$MR <- eval(parse(text = paste("data$", MR.var.name, sep = "")))
+            data$MR <- eval(parse(text = paste("data$", MR.var.name,
+                                               sep = "")))
         }
         
         
@@ -395,29 +409,35 @@ get.pcrit <-
         ## Plot: line intersect##
         
         plot(MR~DO, data, type= "n", ...)
-        points(x = c(dat1$DO, dat2$DO), y = c(dat1$MR, dat2$MR), 
-               cex = .7, ...)
+      
         intersect<-(mod.2$coefficients[1] - mod.1$coefficients[1]) /
             (mod.1$coefficients[2] - mod.2$coefficients[2])
         names(intersect)<-NULL
         if(is.na(mod.2$coefficients[2])==T){
             abline(mod.1$coefficients[1], 0)
-        }else{abline(coef = mod.1$coefficients, col="red", lwd = 1.5, ...)}
-        abline(coef = mod.2$coefficients, col = "red", lwd = 1.5, ...)
-        
-        points(x = intersect, y = mod.1$coefficients[1] +
-                   mod.1$coefficients[2]*intersect, pch=21,
-               col = "blue", cex=1.5)
-        
-        if (Pcrit.type == "lm" | Pcrit.type == "both"){
-            abline(v = intersect, col = "blue", lwd = 1.5,...)            
-        }
-        if (Pcrit.type == "midpoint" | Pcrit.type == "both"){
-            abline(v = midpoint.approx, col = "lightblue", lwd = 1.5,...)            
-        }
-        
+        }else{abline(coef = mod.1$coefficients, col = col.vec[2], ...)}
+        abline(coef = mod.2$coefficients, col = col.vec[2], ...)
 
         
+        if (Pcrit.type == "lm" | Pcrit.type == "both"){
+            abline(v = intersect, col = col.vec[3], lty=2, ...)            
+        }
+        if (Pcrit.type == "midpoint" | Pcrit.type == "both"){
+            abline(v = midpoint.approx, col = col.vec[4], lty=3, ...)            
+        }
+       # Too keep point edges from getting obscured and hazy
+        dots<-list(...)
+        if(exists("dots$cex")==TRUE){
+            cex.val<-0.7
+        }else{cex.val<-dots$cex}
+        
+        if(exists("dots$pch")==TRUE){
+            pch.val<-1
+        }else{pch.val<-dots$pch}
+            
+        points(x = c(dat1$DO, dat2$DO), y = c(dat1$MR, dat2$MR), 
+                   cex = cex.val, pch = pch.val, col = col.vec[1])
+
         
         dat.pre<-data[data$DO>=(2*intersect),]
         
@@ -449,7 +469,8 @@ MR.loops <-
              background.indices = NULL,
              temp.C, elevation.m = NULL,
              bar.press = NULL, bar.units = "atm",
-             PP.units, time.units = "sec",...){
+             PP.units, time.units = "sec",
+             col.vec = c("black", "red"),...){
         ## format the time vectors into POSIX ##
         orig = "1970-01-01 00:00:00 UTC"
         start.idx <- as.POSIXct((start.idx), origin = orig)
@@ -597,6 +618,16 @@ MR.loops <-
         name.num<-as.character(c(1:length(start.idx)))
         ms<-list()
         MR.summary<-data.frame()
+        
+        dots<-list(...)
+        if(exists("dots$cex")==TRUE){
+            cex.val<-0.7
+        }else{cex.val<-dots$cex}
+        
+        if(exists("dots$pch")==TRUE){
+            pch.val<-1
+        }else{pch.val<-dots$pch}
+        
         for(i in 1:length(start.idx)){
             dat <- data.new[data.new$x >= start.idx[i]
                             & data.new$x <= stop.idx[i],]
@@ -605,10 +636,11 @@ MR.loops <-
             mk <- biglm(adj.y ~ x, data=dat)
             ms[[i]] <- mk
             
-            points(dat$x, dat$adj.y)
+            points(dat$x, dat$adj.y, col = col.vec[1],
+                   pch = pch.val, cex = cex.val)
             names(ms[[i]])<-paste(names(ms[[i]]), name.num[i], sep=".")
             abline(coef(ms[[i]]),
-                   col="red",  lwd = 2)
+                   col = col.vec[2], ...)
             
             MR <- coef(mk)[2]*-1
             sds <- summary(mk)$mat[2,4]*sqrt(length(dat[,1]))
