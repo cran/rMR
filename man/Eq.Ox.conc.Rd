@@ -9,7 +9,7 @@ Determines equilibrium dissolved oxygen concentration in water based on pressure
 }
 \usage{
 Eq.Ox.conc(temp.C, elevation.m = NULL, 
-bar.press = NULL, bar.units = NULL, 
+bar.press = NULL, bar.units = "mmHg", 
 out.DO.meas = "mg/L", 
 salinity = 0, salinity.units = "pp.thou")
 }
@@ -60,7 +60,7 @@ Tyler L. Moulton
  \code{\link{Barom.Press}}
 }
 \examples{
-eqO2.1 <- Eq.Ox.conc(temp.C = 20, elevation.m = 1000)
+eqO2.1 <- Eq.Ox.conc(temp.C = 20, elevation.m = 1000, bar.units = NULL)
 
 eqO2.2 <- Eq.Ox.conc(temp.C = 20,
 bar.press = 674.1, bar.units = "mmHg")

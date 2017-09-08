@@ -168,13 +168,14 @@ DO.unit.convert <-
                 bar.press <- bar.press * 760 / 101.32501
             }
         }
-        
+        ## bar.press now set
         
         if (DO.units.in == "pct"){
             DO.pct <- x / 100
         }else{
-            eq.o2.in <- Eq.Ox.conc(temp.C, bar.units = bar.units.out, 
-                                   bar.press =bar.press,
+            eq.o2.in <- Eq.Ox.conc(temp.C = temp.C, elevation.m = NULL,
+                                   bar.press = bar.press,
+                                   bar.units = bar.units.out, 
                                    out.DO.meas = DO.units.in,
                                    salinity = salinity,
                                    salinity.units = salinity.units)
@@ -198,13 +199,13 @@ DO.unit.convert <-
 #'@export
 Eq.Ox.conc <-
     function(temp.C, elevation.m = NULL,
-             bar.press = NULL, bar.units = NULL,
+             bar.press = NULL, bar.units = "mmHg",
              out.DO.meas = "mg/L", salinity = 0,
              salinity.units = "pp.thou"){
         tk <- 273.15 + temp.C
         if(is.null(elevation.m) == FALSE &&
-           is.null(bar.units) == FALSE){
-            stop("'bar.units' must be NULL if 'elevation.m' is assigned a value. ")
+           is.null(bar.press) == FALSE){
+            stop("'bar.press' must be NULL if 'elevation.m' is assigned a value. ")
         }
         
         if( out.DO.meas == "PP"){
@@ -219,27 +220,36 @@ Eq.Ox.conc <-
                 stop("EITHER 'elevation.m' or 'bar.press' must be assigned
                      a value. The other argument must be NULL.")
             }
-
+                    if(bar.units == "atm"){
+                        bar.press.atm <- bar.press
+                    }else if(bar.units == "kpa"){
+                        bar.press.atm <- bar.press / 101.32501
+                    }else if(bar.units == "mmHg"){
+                        bar.press.atm <- bar.press / 760
+                    }else{
+                        stop("invalid pressure units, must be
+                                     'atm', 'kpa', or 'mmHg'")
+                    }
                 DO <- bar.press*0.20946
             
             
             }else if (out.DO.meas == "mg/L"){
-                
+
                 if(is.null(bar.press) == FALSE &&
                    is.null(elevation.m) == TRUE){
                     if(bar.units == "atm"){
-                        bar.press <- bar.press
+                        bar.press.atm <- bar.press
                     }else if(bar.units == "kpa"){
-                        bar.press <- bar.press / 101.325
+                        bar.press.atm <- bar.press / 101.32501
                     }else if(bar.units == "mmHg"){
-                        bar.press <- bar.press / 760
+                        bar.press.atm <- bar.press / 760
                     }else{
                         stop("invalid pressure units, must be
                              'atm', 'kpa', or 'mmHg'")
                     }
                     } else if(is.null(bar.press) == TRUE &&
                               is.null(elevation.m) == FALSE){
-                        bar.press <- Barom.Press (elevation.m, units = "atm")
+                        bar.press.atm <- Barom.Press (elevation.m, units = "atm")
                     }else{
                         stop("EITHER 'elevation.m' or 'barom.press' must be assigned
                              a value. The other argument must be NULL.")
@@ -279,13 +289,16 @@ Eq.Ox.conc <-
                 u <- exp(11.8571 - (3840.70/tk) - (216961/(tk^2)))
                 
                 # pressure factor #
-                Fp <- ((bar.press - u)*(1-(theta*bar.press))) /
+
+                Fp <- ((bar.press.atm - u)*(1-(theta*bar.press.atm))) /
                       ((1-u)*(1-theta))
                               
                 Cp <- DO * Fs * Fp
 
         return(Cp)
             }
+
+
 
 #'@export
 
