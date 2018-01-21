@@ -10,7 +10,7 @@ This function calculates the metabolic rates from multiple closed respirometry l
 \usage{
 MR.loops(data, DO.var.name, time.var.name = "std.time",
              in.DO.meas = "mg/L", out.DO.meas = "mg/L",
-             start.idx, stop.idx, system.vol = 1,
+             start.idx, stop.idx, syst.vol = 1,
              background.consumption = 0,
              background.indices = NULL,
              temp.C, elevation.m = NULL,
@@ -42,7 +42,7 @@ Character class value or vector matching \code{POSIXct} object coding for date t
   \item{stop.idx}{
 Character class value or vector matching \code{POSIXct} object coding for date time. Each element of the vector represents the stop time of a new loop for calculation of metabolic rates.
 }
-  \item{system.vol}{
+  \item{syst.vol}{
 System volume in Liters (defaults to 1 L).
 }
   \item{background.consumption}{

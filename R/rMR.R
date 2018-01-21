@@ -6,11 +6,11 @@ plotRaw <-
     function(data, DO.var.name, time.var.name = "std.time",
              start.time = data$x[1],
              end.time = data$x[length(data$x)], ...){
-
+        
         data$x <- eval(parse(text = paste("data$", time.var.name, sep = "")))
         data <- data[data$x >= start.time & data$x <= end.time,]
         data$y <- eval(parse(text = paste("data$", DO.var.name, sep = "")))
-
+        
         plot(x=data$x, y=data$y, ...)
     }
 
@@ -50,12 +50,12 @@ tot.rss <-
 background.resp <-
     function(data, DO.var.name, time.var.name = "std.time",
              start.time, end.time, col.vec = c("black","red"), ...){
-       
+        
         orig <- "1970-01-01 00:00:00 UTC"
         
         data$y <- eval(parse(text = paste("data$", DO.var.name, sep = "")))
         data$x <- eval(parse(text = paste("data$", time.var.name, sep = "")))
-
+        
         if(class(start.time) != class(end.time)) {
             stop ("start time and end time must be of same atomic class")
         }
@@ -65,8 +65,8 @@ background.resp <-
                              data$x<= as.POSIXct(end.time,
                                                  origin=orig),]  
         }else if (class(start.time)[1]==("POSIXct") &
-                      class(start.time)[2]==("POSIXt")){
-        
+                  class(start.time)[2]==("POSIXt")){
+            
             data <- data[data$x >= start.time &
                              data$x <= end.time] 
         }
@@ -107,12 +107,12 @@ Barom.Press <-
             fact <- 760
         }else{
             stop("invalid pressure units, must be
-             'atm', 'kpa', or 'mmHg'")
+                 'atm', 'kpa', or 'mmHg'")
         }
         P<-exp(-9.80665 * 0.0289644 * elevation.m / 
                    (8.31447 * 288.15))*fact
         return(P)
-    }
+        }
 
 
 #'@export
@@ -220,21 +220,21 @@ Eq.Ox.conc <-
                 stop("EITHER 'elevation.m' or 'bar.press' must be assigned
                      a value. The other argument must be NULL.")
             }
-                    if(bar.units == "atm"){
-                        bar.press.atm <- bar.press
-                    }else if(bar.units == "kpa"){
-                        bar.press.atm <- bar.press / 101.32501
-                    }else if(bar.units == "mmHg"){
-                        bar.press.atm <- bar.press / 760
-                    }else{
-                        stop("invalid pressure units, must be
-                                     'atm', 'kpa', or 'mmHg'")
-                    }
-                DO <- bar.press*0.20946
+            if(bar.units == "atm"){
+                bar.press.atm <- bar.press
+            }else if(bar.units == "kpa"){
+                bar.press.atm <- bar.press / 101.32501
+            }else if(bar.units == "mmHg"){
+                bar.press.atm <- bar.press / 760
+            }else{
+                stop("invalid pressure units, must be
+                     'atm', 'kpa', or 'mmHg'")
+            }
+            DO <- bar.press*0.20946
             
             
             }else if (out.DO.meas == "mg/L"){
-
+                
                 if(is.null(bar.press) == FALSE &&
                    is.null(elevation.m) == TRUE){
                     if(bar.units == "atm"){
@@ -261,40 +261,40 @@ Eq.Ox.conc <-
                 A3 <- 6.642308e7
                 A4 <- 1.243800e10
                 A5 <- 8.621949e11
-
+                
                 DO <- exp(A1 + (A2/tk) -
-                                  (A3/(tk^2)) +
-                                  (A4/(tk^3)) -
-                                  (A5/(tk^4)))
+                              (A3/(tk^2)) +
+                              (A4/(tk^3)) -
+                              (A5/(tk^4)))
                 
-            }else{
-                stop("must specify 'out.DO.meas' as 'mg/L' or 'PP'")
-            }
-                # salinity factor #
-                if(salinity.units == "uS"){
-                    sal <- salinity*5.572e-4 + (salinity^2)*2.02e-9 
-                }else if(salinity.units == "pp.thou"){
-                    sal <- salinity
-                }else{
-                    stop("salinity.units must be 'uS' or 'pp.thou'")
-                }
-                
-                Fs <- exp(-sal*(0.017674 - (10.754/tk) + (2140.7/(tk^2))))
-                
-                ## Pressure factor determination ##
-                theta <- 0.000975 - 
-                    temp.C*1.426e-5 +
-                    (temp.C^2)*6.436e-8
-                
-                u <- exp(11.8571 - (3840.70/tk) - (216961/(tk^2)))
-                
-                # pressure factor #
-
-                Fp <- ((bar.press.atm - u)*(1-(theta*bar.press.atm))) /
-                      ((1-u)*(1-theta))
-                              
-                Cp <- DO * Fs * Fp
-
+                    }else{
+                        stop("must specify 'out.DO.meas' as 'mg/L' or 'PP'")
+                    }
+        # salinity factor #
+        if(salinity.units == "uS"){
+            sal <- salinity*5.572e-4 + (salinity^2)*2.02e-9 
+        }else if(salinity.units == "pp.thou"){
+            sal <- salinity
+        }else{
+            stop("salinity.units must be 'uS' or 'pp.thou'")
+        }
+        
+        Fs <- exp(-sal*(0.017674 - (10.754/tk) + (2140.7/(tk^2))))
+        
+        ## Pressure factor determination ##
+        theta <- 0.000975 - 
+            temp.C*1.426e-5 +
+            (temp.C^2)*6.436e-8
+        
+        u <- exp(11.8571 - (3840.70/tk) - (216961/(tk^2)))
+        
+        # pressure factor #
+        
+        Fp <- ((bar.press.atm - u)*(1-(theta*bar.press.atm))) /
+            ((1-u)*(1-theta))
+        
+        Cp <- DO * Fs * Fp
+        
         return(Cp)
             }
 
@@ -309,12 +309,12 @@ get.pcrit <-
     function(data, DO.var.name, MR.var.name = NULL, Pcrit.below,
              time.interval, time.var = NULL,
              start.time, stop.time, time.units = "sec",
-             Pcrit.type = "both",
+             Pcrit.type = "both", syst.vol = NULL,
              col.vec = c("black", "gray60", "red", "blue"),...){
         
         data$DO<- eval(parse(text = paste("data$", DO.var.name,
-                                              sep = "")))
-            
+                                          sep = "")))
+        
         
         ## set time denominator based on specified time.units ##
         
@@ -327,20 +327,20 @@ get.pcrit <-
                 t.denom <- 3600
             }
             data$time <- eval(parse(text =
-                                   paste("data$", time.var, sep = "")))
+                                        paste("data$", time.var, sep = "")))
             
             data <- data[data$time >= start.time
                          & data$time <= stop.time,]
             
             data$time <- as.numeric(data$time) - min(as.numeric(data$time)) 
         }
-
+        
         
         
         if(any(is.na(data$DO)==TRUE)){
             warning("DO variable contains missing values")
         }
-         
+        
         
         if(is.null(MR.var.name) == TRUE){
             
@@ -371,12 +371,14 @@ get.pcrit <-
             names(data) <- c("DO", "MR")
             data$MR <- data$MR * t.denom
             
-        }else if(is.null(MR.var.name) == FALSE){
-            data$MR <- eval(parse(text = paste("data$", MR.var.name,
-                                               sep = "")))
+            }else if(is.null(MR.var.name) == FALSE){
+                data$MR <- eval(parse(text = paste("data$", MR.var.name,
+                                                   sep = "")))
+            }
+        
+        if(is.null(syst.vol) == FALSE){
+            data$MR.vol.adj <- data$MR*syst.vol
         }
-        
-        
         
         
         minimum.DO <- 
@@ -390,9 +392,12 @@ get.pcrit <-
         for(w in 2:length(zone.of.interest[,1])-1){
             if(zone.of.interest$DO[w] != minimum.DO){
                 break.point <- zone.of.interest$DO[w]
+                if(is.null(syst.vol) == FALSE){
+                    yv <- "MR.vol.adj"
+                }else{yv <- "MR"}
                 RSS <- tot.rss(data = data,
                                break.pt = break.point,
-                               xvar = "DO", yvar = "MR")
+                               xvar = "DO", yvar = yv)
                 RSS.row <- cbind(RSS, zone.of.interest$DO[w])
                 RSS.table <- rbind(RSS.table,RSS.row)    
             }
@@ -402,16 +407,21 @@ get.pcrit <-
         idx.rname <- row.names(RSS.table[RSS.table[,2] == DO.idx,])
         DO.idx.low <- RSS.table[row.names(RSS.table) == 
                                     (as.numeric(idx.rname)-1), 2]
-
+        
         midpoint.approx <- mean(c(DO.idx, DO.idx.low))
         
         
         ##creating linear models##
         dat1 <- data[data$DO > DO.idx,]
-        mod.1 <- lm(MR~DO, data=dat1)
-        
         dat2 <- data[data$DO <= DO.idx,]
-        mod.2 <- lm(MR~DO, data=dat2)
+        if(is.null(syst.vol) == FALSE){
+            mod.1 <- lm(MR.vol.adj~DO, data=dat1)
+            mod.2 <- lm(MR.vol.adj~DO, data=dat2)   
+        }else{
+            mod.1 <- lm(MR~DO, data=dat1)
+            mod.2 <- lm(MR~DO, data=dat2)
+        }
+        
         
         sm1 <- summary(mod.1)
         sm2 <- summary(mod.2)
@@ -422,7 +432,7 @@ get.pcrit <-
         ## Plot: line intersect##
         
         plot(MR~DO, data, type= "n", ...)
-      
+        
         intersect<-(mod.2$coefficients[1] - mod.1$coefficients[1]) /
             (mod.1$coefficients[2] - mod.2$coefficients[2])
         names(intersect)<-NULL
@@ -430,7 +440,7 @@ get.pcrit <-
             abline(mod.1$coefficients[1], 0)
         }else{abline(coef = mod.1$coefficients, col = col.vec[2], ...)}
         abline(coef = mod.2$coefficients, col = col.vec[2], ...)
-
+        
         
         if (Pcrit.type == "lm" | Pcrit.type == "both"){
             abline(v = intersect, col = col.vec[3], lty=2, ...)            
@@ -438,7 +448,7 @@ get.pcrit <-
         if (Pcrit.type == "midpoint" | Pcrit.type == "both"){
             abline(v = midpoint.approx, col = col.vec[4], lty=3, ...)            
         }
-       # Too keep point edges from getting obscured and hazy
+        # Too keep point edges from getting obscured and hazy
         dots<-list(...)
         if(exists("dots$cex")==TRUE){
             cex.val<-0.7
@@ -447,25 +457,34 @@ get.pcrit <-
         if(exists("dots$pch")==TRUE){
             pch.val<-1
         }else{pch.val<-dots$pch}
-            
-        points(x = c(dat1$DO, dat2$DO), y = c(dat1$MR, dat2$MR), 
+        if(is.null(syst.vol) == FALSE){
+            points(x = c(dat1$DO, dat2$DO),
+                   y = c(dat1$MR.vol.adj, dat2$MR.vol.adj), 
                    cex = cex.val, pch = pch.val, col = col.vec[1])
-
+        }else{
+            points(x = c(dat1$DO, dat2$DO), y = c(dat1$MR, dat2$MR), 
+                   cex = cex.val, pch = pch.val, col = col.vec[1])  
+        }
+        
+        
         
         dat.pre<-data[data$DO>=(2*intersect),]
         
         P.crit<-as.data.frame(cbind(intersect, midpoint.approx,
                                     adjr2.pre, adjr2.post))
+        DATA <- as.data.frame(data)
         names(P.crit)<-c("Pcrit.lm", "Pcrit.midpoint",
                          "Adj.r2.above", "Adj.r2.below")
-
+        
         above.Pc <- list(mod.1)
         names(above.Pc) <- "above"
         below.Pc <- list(mod.2)
         names(below.Pc) <- "below"
         
-        Pc<-c(P.crit, above.Pc, below.Pc)
-        return(Pc)
+        Pc <- list(P.crit, DATA) 
+        names(Pc) <- c("SummaryCrit", "DATA")
+        Pcm <- c(Pc, above.Pc, below.Pc)
+        return(Pcm)
         
     }
 
@@ -477,7 +496,7 @@ get.pcrit <-
 MR.loops <-
     function(data, DO.var.name, time.var.name = "std.time",
              in.DO.meas = "mg/L", out.DO.meas = "mg/L",
-             start.idx, stop.idx, system.vol = 1,
+             start.idx, stop.idx, syst.vol = 1,
              background.consumption = 0,
              background.indices = NULL,
              temp.C, elevation.m = NULL,
@@ -588,7 +607,7 @@ MR.loops <-
         }
         
         if(out.DO.meas == "mg/L"){
-            data$y <- system.vol * data$y
+            data$y <- syst.vol * data$y
             # Now data$y in units of mg, not mg/L #
         }else if(out.DO.meas == "PP"){
             # converting MR to PP units #
@@ -615,8 +634,8 @@ MR.loops <-
                             data$x <= as.POSIXct(stop.idx[i]), ]
             dsn$adj.y <- (dsn$y- (as.numeric(dsn$x) -
                                       as.numeric(start.idx[i]))*
-                                     ((as.numeric(dsn$x) * bgd.slope.slope) +
-                                          bgd.slope.int))
+                              ((as.numeric(dsn$x) * bgd.slope.slope) +
+                                   bgd.slope.int))
             
             data.new <- rbind(data.new, dsn)
         }
@@ -700,7 +719,7 @@ get.witrox.data <-
                                  split = ".")[[1]])
                     split.name.period <- paste(split.name.period, sep="",
                                                collapse="")
-
+                    
                 }
             }
         }else if(choose.names==T){

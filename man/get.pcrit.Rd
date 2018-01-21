@@ -13,7 +13,7 @@ If metabolic rate has not already been calculated and the user wishes to calcula
 get.pcrit(data, DO.var.name, MR.var.name = NULL, Pcrit.below,
              time.interval, time.var = NULL,
              start.time, stop.time, time.units = "sec",
-             Pcrit.type = "both",
+             Pcrit.type = "both", syst.vol = NULL,
              col.vec = c("black", "gray60", "red", "blue"),...)
 }
 \arguments{
@@ -46,6 +46,9 @@ Units of time in MR calculation. Defaults to \code{"sec"}, must be \code{"sec"},
 }
   \item{Pcrit.type}{
 Either \code{"lm"} to draw a vertical line at the Pcrit as determined by the intersection point of the best fit lines(Yeager and Ultsch 1989) or \code{"midpoint"} as determined by the midpoint between the two points on either side of the Pcrit (Yeager and Ultsch 1989). \code{"both"} will plot both as vertical lines on the plot. NULL will plot neither. Both values are returned in the output.
+}
+  \item{syst.vol}{
+    Enter the system volume in Liters. If \code{syst.vol} takes a value, then an additional column, \code{MR.vol.adj} will be added to \code{$DATA}. The values in this colum will reflect mg of oxygen consumed. Otherwise, the returned MR variable (and in \code{data}) on the y axis of the plot will represent \code{DO.var.name} units/time.
 }
   \item{\dots}{
 Arguments passed on to internal functions.
@@ -97,6 +100,7 @@ Pcrit2 <-get.pcrit(data = fishMR, DO.var.name = "DO.mgL",
                     time.units = "min")
 ## MR units in mgO2 / min
 
+
 Pcrit3 <-get.pcrit(data = fishMR, DO.var.name = "DO.mgL",
                     Pcrit.below = 2,
                     time.var = "std.time",
@@ -104,7 +108,21 @@ Pcrit3 <-get.pcrit(data = fishMR, DO.var.name = "DO.mgL",
                     start.time = "2015-07-03 06:15:00",
                     stop.time = "2015-07-03 08:05:00",
                     time.units = "hr",
-                    ylab = "Met Rate (mg O2 / hour)")
+                    ylab = "Met Rate (mg O2 L-1 hr-1)")
+## MR units in mgO2 / hr
+
+## syst vol specified at 0.75 L ##
+
+Pcrit3a <-get.pcrit(data = fishMR, DO.var.name = "DO.mgL",
+                    Pcrit.below = 2,
+                    time.var = "std.time",
+                    time.interval = 60,
+                    start.time = "2015-07-03 06:15:00",
+                    stop.time = "2015-07-03 08:05:00",
+                    time.units = "hr",
+                    syst.vol = 0.75,
+                    ylab = "Met Rate (mg O2 / hr)")
+## MR units in mgO2 / hr
 
 ## No vertical lines on plot
 
@@ -115,7 +133,7 @@ Pcrit4 <-get.pcrit(data = fishMR, DO.var.name = "DO.mgL",
                     start.time = "2015-07-03 06:15:00",
                     stop.time = "2015-07-03 08:05:00",
                     time.units = "hr",
-                    ylab = "Met Rate (mg O2 / hour)",
+                    ylab = "Met Rate (mg O2 L-1 hr-1)",
                     Pcrit.type = "")
                     
 
